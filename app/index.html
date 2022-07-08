@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div id="container">
+    <img draggable="false" src="" alt="" id="screenshot">
+    <canvas id="area"></canvas>
+    <div id="tools">
+        <div><img src="assets/pen.png" alt="" data-tooltip="Pen"></div>
+        <div><img src="assets/line.png" alt="" data-tooltip="Line"></div>
+        <div><img src="assets/arrow.png" alt="" data-tooltip="Arrow"></div>
+        <div><img src="assets/rectangle.png" alt="" data-tooltip="Rectangle"></div>
+        <div><img src="assets/highlight.png" alt="" data-tooltip="Highlight"></div>
+        <div><img src="assets/text.png" alt="" data-tooltip="Text"></div>
+        <div><img src="assets/color_arrow.png" alt="" data-tooltip="Color"></div>
+        <div><img src="assets/undo.png" alt="" data-tooltip="Undo"></div>
+        <div><img src="assets/save.png" alt="" data-tooltip="Save"></div>
+        <div><img src="assets/copy.png" alt="" data-tooltip="Copy"></div>
+        <div><img src="assets/print.png" alt="" data-tooltip="Print"></div>
+        <div onclick="upload()"><img src="assets/upload.png" alt="" data-tooltip="Upload"></div>
+        <div><img src="assets/close.png" alt="" data-tooltip="Close"></div>
+    </div>
+    <div id="tooltip">Pen</div>
+</div>
+<div id="popup-container" onclick="closePopup()">
+    <div id="popup">
+        <div id="popup-text"></div>
+        <button onclick="closePopup()">Close popup</button>
+    </div>
+</div>
+</body>
+<style>
+    * {
+        user-select: none;
+        overflow: hidden;
+    }
+
+    body {
+        background: black;
+    }
+
+    #container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+    }
+
+    #container > #screenshot, #container > #area {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+
+    #tools {
+        position: absolute;
+        display: flex;
+        width: auto;
+        height: 31px;
+        border: 3px solid #8d8d8d;
+        border-radius: 3px;
+        background: #e1e1e1;
+    }
+
+    #tools > div {
+        margin: 3px;
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+        transition: all .5s;
+    }
+
+    #tools > div:hover {
+        transform: scale(1.2);
+    }
+
+    #tools > div:last-child {
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+
+    #tools > div:first-child {
+        border-top-left-radius: 3px;
+        border-bottom-left-radius: 3px;
+    }
+
+    #tooltip {
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-family: Calibri, serif;
+        color: white;
+        background: black;
+        border-radius: 5px;
+        padding: 4px;
+        display: none;
+        pointer-events: none;
+    }
+</style>
+<script>
+    (async () => {
+        const query = new URLSearchParams(location.search);
+        const area = document.getElementById("area");
+        const tools = document.getElementById("tools");
+        const ctx = area.getContext("2d");
+        const img = document.getElementById("screenshot");
+        const tooltip = document.getElementById("tooltip");
+        const config = await (await fetch("./config.json")).json();
+        if(config.server.endsWith("/"))config.server = config.server.split("").reverse().slice(1).reverse().join("");
+        img.src = query.get("path");
+        await new Promise(resolve => img.onload = resolve);
+        addEventListener("keydown", ev => ev.key === "i" && location.reload());
+        let startX = 0;
+        let startY = 0;
+        let endX = img.width;
+        let endY = img.height;
+        let hasTouched = false;
+        const moveArea = (x, y) => {
+            startX += x;
+            startY += y;
+            endX += x;
+            endY += y;
+        };
+        const renderArea = () => {
+            area.width = window.innerWidth;
+            area.height = window.innerHeight;
+            ctx.save();
+            ctx.globalAlpha = 0.3;
+            ctx.fillRect(0, 0, area.width, area.height);
+            ctx.clearRect(startX, startY, endX - startX, endY - startY);
+            ctx.restore();
+            const rect = tools.getBoundingClientRect();
+            tools.style.right = Math.max(3, area.width - endX) + "px";
+            tools.style.bottom = Math.max(3, area.height - endY - rect.height) + "px";
+        };
+        let mouseDown = false;
+        let mouseDownFirst = false;
+        addEventListener("mousemove", ev => {
+            let {target} = ev;
+            if (target.tagName === "DIV" && target.children[0]) target = target.children[0];
+            if (!target || !target.getAttribute("data-tooltip")) return tooltip.style.display = "none";
+            tooltip.style.left = ev.clientX + "px";
+            tooltip.style.top = (ev.clientY - 30) + "px";
+            tooltip.innerHTML = target.getAttribute("data-tooltip");
+            tooltip.style.display = "block";
+        });
+        area.addEventListener("mousedown", () => {
+            mouseDown = true;
+            mouseDownFirst = true;
+        });
+        area.addEventListener("mousemove", ev => {
+            if (!mouseDown) return;
+            hasTouched = true;
+            if (mouseDownFirst) {
+                startX = ev.offsetX;
+                startY = ev.offsetY;
+                mouseDownFirst = false;
+            }
+            endX = ev.offsetX;
+            endY = ev.offsetY;
+        });
+        addEventListener("mouseup", () => mouseDown = false);
+        addEventListener("keydown", ev => {
+            let x = 0;
+            let y = 0;
+            if (ev.key === "KeyUp") y--;
+            if (ev.key === "KeyDown") y++;
+            if (ev.key === "KeyRight") x++;
+            if (ev.key === "KeyLeft") x--;
+            moveArea(x, y);
+            if (startX < 0 || startX >= area.width || startY < 0 || startY >= area.height) moveArea(-x, -y);
+        });
+        new (function () {
+            requestAnimationFrame(() => new this.constructor());
+            renderArea();
+        })();
+        window.upload = async () => {
+            const res = await (await fetch(config.server + "?key="+encodeURI(config["api-key"]))).json();
+            // TODO: use post method to send image too
+            if(res.success) {
+
+            } else createPopup("Uploading image failed!");
+        };
+        // TODO: createPopup and closePopup functions
+        // TODO: tool functionalities
+    })();
+</script>
+</html>

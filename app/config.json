@@ -1,0 +1,20 @@
+{
+  "//SHORTCUT INFO0": "The texts in parentheses are the aliases/shortcuts for the words before them",
+
+  "//SHORTCUT INFO1": "Available modifiers",
+  "//SHORTCUT INFO2": "Command(Cmd), Control(Ctrl), CommandOrControl(CmdOrCtrl), Alt, Option, AltGr",
+  "//SHORTCUT INFO3": "Shift, Super, Meta",
+
+  "//SHORTCUT INFO4": "Available key codes",
+  "//SHORTCUT INFO5": "0 to 9, A to Z, F1 to F24, Plus, Space, Tab, Capslock, Numlock, Scrolllock, Backspace",
+  "//SHORTCUT INFO6": "Delete, Insert, Return(Enter), Up, Down, Left, Right, Home, End, PageUp, PageDown, Escape(Esc)",
+  "//SHORTCUT INFO7": "VolumeUp, VolumeDown, VolumeMute, MediaNextTrack, MediaPreviousTrack, MediaStop",
+  "//SHORTCUT INFO8": "MediaPlayPause, PrintScreen, num0 to num9, numdec, numadd, numsub, nummult, numdiv",
+  "//SHORTCUT INFO9": "Punctuations like; ~, !, @, #, $, etc.",
+
+  "shortcutFull": "PrintScreen",
+  "shortcutWindow": "CmdOrCtrl+PrintScreen",
+  "format": "png",
+  "server": "https://myweb.site/api/screenshot",
+  "api-key": "ENTER THE API KEY FROM THE SERVER"
+}

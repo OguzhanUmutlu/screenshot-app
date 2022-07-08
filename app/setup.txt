@@ -1,0 +1,14 @@
+Windows:
+Install node.js: https://nodejs.org/en/download/
+
+OSX:
+Install node.js: https://nodejs.org/en/download/
+
+Linux:
+Install nodejs: sudo apt install nodejs
+Install imagemagick: sudo apt install imagemagick
+
+
+ALL:
+Install dependencies on this folder: npm install
+Fill config.json
